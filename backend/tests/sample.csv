@@ -1,0 +1,6 @@
+name,price,rating,in_stock,released,category
+Creatine,24.99,4.8,true,2021-03-15,protein
+Whey Protein,39.95,4.6,true,2020-11-01,protein
+Shaker Bottle,9.50,4.2,false,2022-01-20,accessory
+Pre-Workout,34.00,4.9,yes,2023-06-30,protein
+Resistance Band,15.25,4.1,no,2019-08-12,accessory
