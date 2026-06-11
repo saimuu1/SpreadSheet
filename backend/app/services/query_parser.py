@@ -13,6 +13,7 @@ parameterized SQL statement. This module is pure and has no database dependency.
 from __future__ import annotations
 
 from dataclasses import dataclass, field as dataclass_field
+from datetime import date
 
 from dateutil import parser as date_parser
 
@@ -90,9 +91,10 @@ def _coerce_boolean(field: str, raw: str) -> bool:
     raise QueryError(f"Filter on '{field}' expects true/false, got {raw!r}.")
 
 
-def _coerce_date(field: str, raw: str) -> str:
+def _coerce_date(field: str, raw: str) -> date:
+    # Return a real date object so asyncpg binds it as a Postgres date parameter.
     try:
-        return date_parser.parse(raw).date().isoformat()
+        return date_parser.parse(raw).date()
     except (ValueError, OverflowError):
         raise QueryError(f"Filter on '{field}' expects a date, got {raw!r}.") from None
 

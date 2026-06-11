@@ -64,8 +64,10 @@ def test_boolean_coercion():
 
 
 def test_date_coercion():
+    from datetime import date
+
     spec = parse_query({"released__gte": "2021-01-01"}, COLUMNS)
-    assert spec.filters[0].value == "2021-01-01"
+    assert spec.filters[0].value == date(2021, 1, 1)
 
 
 def test_sort_desc_and_asc():
