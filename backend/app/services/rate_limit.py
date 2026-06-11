@@ -10,19 +10,23 @@ production scale this moves to Redis (e.g. a sliding window or token bucket) for
 
 from __future__ import annotations
 
+from datetime import timedelta
+
 from fastapi import HTTPException, status
 
 from app.services.plans import Plan
 
+# api_key_id is bound as text and cast to uuid; the window is a timedelta (asyncpg's
+# native encoding for the Postgres interval type).
 _COUNT_SQL = (
     "select count(*) from request_logs "
-    "where api_key_id = $1 and created_at > now() - $2::interval"
+    "where api_key_id = $1::uuid and created_at > now() - $2::interval"
 )
 
 
 async def enforce_and_log(conn, api_key_id: str, plan: Plan) -> None:
     """Raise 429 if the key is over its minute/day limit; otherwise record the request."""
-    minute_count = await conn.fetchval(_COUNT_SQL, api_key_id, "1 minute")
+    minute_count = await conn.fetchval(_COUNT_SQL, api_key_id, timedelta(minutes=1))
     if minute_count >= plan.requests_per_minute:
         raise HTTPException(
             status_code=status.HTTP_429_TOO_MANY_REQUESTS,
@@ -33,7 +37,7 @@ async def enforce_and_log(conn, api_key_id: str, plan: Plan) -> None:
             headers={"Retry-After": "60"},
         )
 
-    day_count = await conn.fetchval(_COUNT_SQL, api_key_id, "1 day")
+    day_count = await conn.fetchval(_COUNT_SQL, api_key_id, timedelta(days=1))
     if day_count >= plan.requests_per_day:
         raise HTTPException(
             status_code=status.HTTP_429_TOO_MANY_REQUESTS,
@@ -45,5 +49,5 @@ async def enforce_and_log(conn, api_key_id: str, plan: Plan) -> None:
         )
 
     await conn.execute(
-        "insert into request_logs (api_key_id) values ($1)", api_key_id
+        "insert into request_logs (api_key_id) values ($1::uuid)", api_key_id
     )

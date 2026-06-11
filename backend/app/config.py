@@ -22,6 +22,11 @@ class Settings(BaseSettings):
     def cors_origin_list(self) -> list[str]:
         return [o.strip() for o in self.cors_origins.split(",") if o.strip()]
 
+    @property
+    def jwks_url(self) -> str:
+        # Supabase publishes its public signing keys here (for asymmetric JWTs).
+        return f"{self.supabase_url}/auth/v1/.well-known/jwks.json"
+
 
 @lru_cache
 def get_settings() -> Settings:

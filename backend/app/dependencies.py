@@ -1,16 +1,17 @@
 """FastAPI dependencies for the two authentication systems.
 
-  * get_current_user  — Builder auth. Verifies a Supabase-issued JWT (HS256, signed with
-    the project JWT secret) and returns the caller's identity plus their raw access token
-    (needed to build an RLS-scoped Supabase client).
+  * get_current_user  — Builder auth. Verifies a Supabase-issued JWT and returns the caller's
+    identity plus their raw access token (needed to build an RLS-scoped Supabase client).
+    Supports both modern asymmetric signing keys (ES256/RS256, verified against Supabase's
+    public JWKS) and the legacy HS256 shared secret.
 
-  * resolve_api_key   — Consumer auth (added in Phase 4). Hashes an incoming API key and
-    resolves the owning user.
+  * resolve_api_key   — Consumer auth. Hashes an incoming API key and resolves the owner.
 """
 
 from __future__ import annotations
 
 from dataclasses import dataclass
+from functools import lru_cache
 
 import jwt
 from fastapi import Header, HTTPException, status
@@ -18,6 +19,41 @@ from fastapi import Header, HTTPException, status
 from app.config import get_settings
 from app.db import get_pool
 from app.services.keys import hash_key
+
+# Algorithms we accept for asymmetric (public-key) verification.
+_ASYMMETRIC_ALGS = ["ES256", "RS256"]
+
+
+@lru_cache
+def _jwks_client() -> jwt.PyJWKClient:
+    """Cached client that fetches + caches Supabase's public signing keys."""
+    return jwt.PyJWKClient(get_settings().jwks_url)
+
+
+def _decode_token(token: str) -> dict:
+    """Verify a Supabase JWT, handling both signing schemes.
+
+    We branch on the token header's `alg`:
+      * HS256  -> verify with the shared JWT secret.
+      * ES256/RS256 -> fetch the matching public key from JWKS and verify with it.
+    Restricting each branch to a fixed algorithm set prevents alg-confusion attacks.
+    """
+    settings = get_settings()
+    alg = jwt.get_unverified_header(token).get("alg")
+    if alg == "HS256":
+        return jwt.decode(
+            token,
+            settings.supabase_jwt_secret,
+            algorithms=["HS256"],
+            audience="authenticated",
+        )
+    signing_key = _jwks_client().get_signing_key_from_jwt(token)
+    return jwt.decode(
+        token,
+        signing_key.key,
+        algorithms=_ASYMMETRIC_ALGS,
+        audience="authenticated",
+    )
 
 
 @dataclass
@@ -47,14 +83,8 @@ def _bearer_token(authorization: str | None) -> str:
 async def get_current_user(authorization: str | None = Header(default=None)) -> CurrentUser:
     """Builder auth: validate the Supabase access token and return the user."""
     token = _bearer_token(authorization)
-    settings = get_settings()
     try:
-        payload = jwt.decode(
-            token,
-            settings.supabase_jwt_secret,
-            algorithms=["HS256"],
-            audience="authenticated",
-        )
+        payload = _decode_token(token)
     except jwt.PyJWTError as exc:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
