@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom'
 import Footer from '../components/Footer'
 import {
   IconArrowRight, IconUpload, IconLayers, IconCode, IconBolt,
-  IconShield, IconGauge, IconDatabase, IconCheck, IconSparkle,
+  IconShield, IconCheck,
 } from '../components/icons'
 
 function ApiDemo() {
@@ -44,12 +44,9 @@ const steps = [
 ]
 
 const features = [
-  { icon: IconBolt, title: 'Instant REST endpoints', body: 'A queryable API exists the second your upload finishes.' },
-  { icon: IconCode, title: 'A real query language', body: 'price__gt=20, name__contains=oil, sort=-rating, pagination — all in the URL.' },
-  { icon: IconShield, title: 'Secure by design', body: 'Hashed API keys, schema-whitelisted fields, parameterized queries, Postgres RLS.' },
-  { icon: IconGauge, title: 'Rate limits & tiers', body: 'Per-plan request caps enforced in the backend, not faked in the UI.' },
-  { icon: IconDatabase, title: 'Any shape of data', body: 'Stored as jsonb, so every file just works — no table gymnastics.' },
-  { icon: IconSparkle, title: 'Auto-generated docs', body: 'Every dataset gets its own docs page with fields, operators and examples.' },
+  { icon: IconBolt, title: 'Instant REST endpoints', body: 'A secure, queryable JSON API exists the moment your upload finishes — no code, no config.' },
+  { icon: IconCode, title: 'A real query language', body: 'Filter, compare, search, sort and paginate right in the URL — price__gt=20, name__contains=oil, sort=-rating.' },
+  { icon: IconShield, title: 'Secure by design', body: 'Hashed API keys, schema-whitelisted fields, parameterized queries and Postgres row-level security.' },
 ]
 
 const tiers = [
@@ -116,7 +113,7 @@ export default function Landing() {
       {/* Features */}
       <section id="features" className="container-page py-12">
         <SectionHeading eyebrow="Features" title="Engineered like a real product" />
-        <div className="mt-14 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="mt-14 grid gap-6 md:grid-cols-3">
           {features.map((f) => (
             <div key={f.title} className="card card-hover p-6">
               <span className="flex h-11 w-11 items-center justify-center rounded-lg bg-brand-500/10 text-brand-400">
