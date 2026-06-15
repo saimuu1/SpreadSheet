@@ -8,29 +8,29 @@ import {
 function ApiDemo() {
   return (
     <div className="card animate-fade-up delay-2 overflow-hidden">
-      <div className="flex items-center gap-2 border-b border-white/5 px-4 py-3">
-        <span className="h-3 w-3 rounded-full bg-red-400/70" />
-        <span className="h-3 w-3 rounded-full bg-yellow-400/70" />
-        <span className="h-3 w-3 rounded-full bg-green-400/70" />
+      <div className="flex items-center gap-2 border-b border-white/[0.06] px-4 py-3">
+        <span className="h-2.5 w-2.5 rounded-full bg-slate-600" />
+        <span className="h-2.5 w-2.5 rounded-full bg-slate-600" />
+        <span className="h-2.5 w-2.5 rounded-full bg-slate-600" />
         <span className="ml-3 font-mono text-xs text-slate-500">products.api</span>
       </div>
       <div className="space-y-3 p-5 font-mono text-[13px] leading-relaxed">
         <div className="flex flex-wrap items-center gap-2">
-          <span className="rounded bg-emerald-500/15 px-1.5 py-0.5 text-emerald-300">GET</span>
+          <span className="rounded bg-emerald-500/10 px-1.5 py-0.5 text-emerald-300/90">GET</span>
           <span className="text-slate-300">/api/v1/datasets/<span className="text-slate-500">…</span></span>
         </div>
-        <div className="text-slate-400">
-          ?category=<span className="text-brand-300">protein</span>
-          &amp;price__gt=<span className="text-accent-400">20</span>
-          &amp;sort=<span className="text-accent-400">-rating</span>
+        <div className="text-slate-500">
+          ?category=<span className="text-slate-300">protein</span>
+          &amp;price__gt=<span className="text-brand-300">20</span>
+          &amp;sort=<span className="text-brand-300">-rating</span>
         </div>
-        <div className="rounded-xl border border-white/5 bg-black/30 p-4 text-slate-300">
-          <div><span className="text-slate-500">{'{'}</span></div>
-          <div className="pl-4"><span className="text-brand-300">"data"</span>: [</div>
-          <div className="pl-8 text-slate-400">{'{ '}<span className="text-brand-300">"name"</span>: <span className="text-emerald-300">"Creatine"</span>, <span className="text-brand-300">"price"</span>: <span className="text-accent-400">24.99</span>, <span className="text-brand-300">"rating"</span>: <span className="text-accent-400">4.8</span> {'}'}</div>
+        <div className="rounded-lg border border-white/[0.06] bg-black/20 p-4 text-slate-400">
+          <div><span className="text-slate-600">{'{'}</span></div>
+          <div className="pl-4"><span className="text-slate-400">"data"</span>: [</div>
+          <div className="pl-8">{'{ '}<span className="text-slate-400">"name"</span>: <span className="text-emerald-300/80">"Creatine"</span>, <span className="text-slate-400">"price"</span>: <span className="text-brand-300">24.99</span>, <span className="text-slate-400">"rating"</span>: <span className="text-brand-300">4.8</span> {'}'}</div>
           <div className="pl-4">],</div>
-          <div className="pl-4"><span className="text-brand-300">"page"</span>: <span className="text-accent-400">1</span>, <span className="text-brand-300">"total"</span>: <span className="text-accent-400">1</span></div>
-          <div><span className="text-slate-500">{'}'}</span></div>
+          <div className="pl-4"><span className="text-slate-400">"page"</span>: <span className="text-brand-300">1</span>, <span className="text-slate-400">"total"</span>: <span className="text-brand-300">1</span></div>
+          <div><span className="text-slate-600">{'}'}</span></div>
         </div>
       </div>
     </div>
@@ -74,8 +74,8 @@ export default function Landing() {
           <span className="badge animate-fade-up">
             <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" /> Spreadsheets → APIs
           </span>
-          <h1 className="animate-fade-up delay-1 mt-5 text-4xl font-extrabold leading-[1.05] tracking-tight text-white sm:text-5xl lg:text-6xl">
-            Turn any spreadsheet into a <span className="text-gradient">live REST API</span> in seconds.
+          <h1 className="animate-fade-up delay-1 mt-5 text-4xl font-bold leading-[1.08] tracking-tight text-white sm:text-5xl lg:text-[3.4rem]">
+            Turn any spreadsheet into a <span className="text-accent">live REST API</span> in seconds.
           </h1>
           <p className="animate-fade-up delay-2 mt-6 max-w-xl text-lg text-slate-400">
             Upload a CSV and instantly get a secure, queryable JSON endpoint — with filtering,
@@ -91,7 +91,7 @@ export default function Landing() {
             No credit card · Free tier forever
           </p>
         </div>
-        <div className="animate-float">
+        <div className="animate-fade-up delay-3">
           <ApiDemo />
         </div>
       </section>
@@ -102,8 +102,8 @@ export default function Landing() {
         <div className="mt-14 grid gap-6 md:grid-cols-3">
           {steps.map((s, i) => (
             <div key={s.title} className="card card-hover relative p-7">
-              <span className="absolute right-6 top-5 font-mono text-5xl font-bold text-white/5">0{i + 1}</span>
-              <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-brand-500/20 to-accent-500/10 text-brand-300 ring-1 ring-inset ring-white/10">
+              <span className="absolute right-6 top-5 font-mono text-5xl font-bold text-white/[0.04]">0{i + 1}</span>
+              <span className="flex h-12 w-12 items-center justify-center rounded-lg bg-brand-500/10 text-brand-400">
                 <s.icon width={22} height={22} />
               </span>
               <h3 className="mt-5 text-lg font-semibold text-white">{s.title}</h3>
@@ -119,7 +119,7 @@ export default function Landing() {
         <div className="mt-14 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {features.map((f) => (
             <div key={f.title} className="card card-hover p-6">
-              <span className="flex h-11 w-11 items-center justify-center rounded-xl border border-white/10 bg-white/[0.04] text-brand-300">
+              <span className="flex h-11 w-11 items-center justify-center rounded-lg bg-brand-500/10 text-brand-400">
                 <f.icon width={20} height={20} />
               </span>
               <h3 className="mt-4 font-semibold text-white">{f.title}</h3>
@@ -136,10 +136,10 @@ export default function Landing() {
           {tiers.map((t) => (
             <div
               key={t.name}
-              className={`card relative p-8 ${t.highlight ? 'ring-2 ring-brand-500/50' : ''}`}
+              className={`card relative p-8 ${t.highlight ? 'ring-1 ring-brand-500/40' : ''}`}
             >
               {t.highlight && (
-                <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-gradient-to-r from-brand-500 to-brand-600 px-3 py-1 text-xs font-semibold text-white shadow-lg shadow-brand-600/40">
+                <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-brand-500 px-3 py-1 text-xs font-semibold text-white">
                   Most popular
                 </span>
               )}
@@ -169,13 +169,12 @@ export default function Landing() {
 
       {/* CTA */}
       <section className="container-page py-12">
-        <div className="card relative overflow-hidden p-12 text-center">
-          <div className="absolute -top-24 left-1/2 h-64 w-64 -translate-x-1/2 rounded-full bg-brand-600/30 blur-3xl" />
-          <h2 className="relative text-3xl font-bold text-white">Ship your first API in 60 seconds.</h2>
-          <p className="relative mx-auto mt-3 max-w-md text-slate-400">
+        <div className="card p-12 text-center">
+          <h2 className="text-3xl font-bold text-white">Ship your first API in 60 seconds.</h2>
+          <p className="mx-auto mt-3 max-w-md text-slate-400">
             Sign up, upload a spreadsheet, copy your key. That's the whole setup.
           </p>
-          <Link to="/signup" className="btn-primary relative mt-8 px-6 py-3 text-base">
+          <Link to="/signup" className="btn-primary mt-8 px-6 py-3 text-base">
             Create your free account <IconArrowRight width={18} height={18} />
           </Link>
         </div>
@@ -189,7 +188,7 @@ export default function Landing() {
 function SectionHeading({ eyebrow, title }) {
   return (
     <div className="text-center">
-      <p className="text-sm font-semibold uppercase tracking-widest text-brand-300">{eyebrow}</p>
+      <p className="text-sm font-semibold uppercase tracking-widest text-brand-400">{eyebrow}</p>
       <h2 className="mt-3 text-3xl font-bold tracking-tight text-white sm:text-4xl">{title}</h2>
     </div>
   )

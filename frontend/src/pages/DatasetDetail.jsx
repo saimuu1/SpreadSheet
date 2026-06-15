@@ -53,7 +53,7 @@ export default function DatasetDetail() {
           {/* Endpoint */}
           <section className="card p-6">
             <div className="flex items-center gap-2">
-              <IconCode width={18} height={18} className="text-brand-300" />
+              <IconCode width={18} height={18} className="text-brand-400" />
               <h2 className="font-semibold text-white">Endpoint</h2>
             </div>
             <div className="mt-4 flex flex-wrap items-center gap-2 rounded-xl border border-white/5 bg-black/30 px-4 py-3 font-mono text-sm">
@@ -151,7 +151,7 @@ function TryIt({ baseUrl, defaultQuery }) {
   return (
     <section className="card sticky top-24 p-6">
       <div className="flex items-center gap-2">
-        <IconBolt width={18} height={18} className="text-brand-300" />
+        <IconBolt width={18} height={18} className="text-brand-400" />
         <h2 className="font-semibold text-white">Try it live</h2>
       </div>
       <div className="mt-4 space-y-3">

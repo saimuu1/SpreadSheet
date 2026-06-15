@@ -12,18 +12,16 @@ export default function AuthLayout({ title, subtitle, children, footer }) {
   return (
     <div className="grid min-h-screen lg:grid-cols-2">
       {/* Brand / marketing panel */}
-      <div className="relative hidden flex-col justify-between overflow-hidden border-r border-white/5 p-12 lg:flex">
-        <div className="absolute -left-20 top-10 h-72 w-72 rounded-full bg-brand-600/30 blur-3xl" />
-        <div className="absolute bottom-0 right-0 h-72 w-72 rounded-full bg-accent-500/20 blur-3xl" />
+      <div className="flex flex-col justify-between border-r border-white/[0.08] bg-white/[0.01] p-12 lg:flex hidden">
         <Logo />
-        <div className="relative">
+        <div>
           <h2 className="max-w-md text-3xl font-bold leading-tight text-white">
-            Turn any spreadsheet into a <span className="text-gradient">production API</span> in seconds.
+            Turn any spreadsheet into a <span className="text-accent">production API</span> in seconds.
           </h2>
           <ul className="mt-8 space-y-4">
             {points.map(({ icon: Icon, text }) => (
               <li key={text} className="flex items-center gap-3 text-slate-300">
-                <span className="flex h-9 w-9 items-center justify-center rounded-lg border border-white/10 bg-white/[0.04] text-brand-300">
+                <span className="flex h-9 w-9 items-center justify-center rounded-lg border border-white/10 bg-white/[0.03] text-brand-400">
                   <Icon width={18} height={18} />
                 </span>
                 {text}
@@ -31,7 +29,7 @@ export default function AuthLayout({ title, subtitle, children, footer }) {
             ))}
           </ul>
         </div>
-        <p className="relative text-sm text-slate-500">Upload → infer schema → query. No backend code.</p>
+        <p className="text-sm text-slate-500">Upload → infer schema → query. No backend code.</p>
       </div>
 
       {/* Form panel */}

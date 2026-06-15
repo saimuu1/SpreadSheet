@@ -90,7 +90,7 @@ function PlanControl({ me, onChange }) {
   return (
     <div className="flex items-center gap-3">
       <span className={`badge ${isPro ? 'border-brand-400/40 text-brand-200' : ''}`}>
-        {isPro && <IconSparkle width={13} height={13} className="text-brand-300" />}
+        {isPro && <IconSparkle width={13} height={13} className="text-brand-400" />}
         {isPro ? 'Pro plan' : 'Free plan'}
       </span>
       <button onClick={toggle} disabled={busy} className={isPro ? 'btn-ghost' : 'btn-primary'}>
@@ -135,7 +135,7 @@ function UploadCard({ plan, datasetCount, onUploaded }) {
   return (
     <section className="card p-6">
       <div className="flex items-center gap-2">
-        <IconUpload width={18} height={18} className="text-brand-300" />
+        <IconUpload width={18} height={18} className="text-brand-400" />
         <h2 className="font-semibold text-white">Upload a spreadsheet</h2>
       </div>
 
@@ -151,9 +151,9 @@ function UploadCard({ plan, datasetCount, onUploaded }) {
         <input ref={inputRef} type="file" accept=".csv,text/csv" hidden
           onChange={(e) => handleFile(e.target.files?.[0])} />
         {uploading ? (
-          <IconSpinner width={28} height={28} className="text-brand-300" />
+          <IconSpinner width={28} height={28} className="text-brand-400" />
         ) : (
-          <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-brand-500/20 to-accent-500/10 text-brand-300 ring-1 ring-inset ring-white/10">
+          <span className="flex h-14 w-14 items-center justify-center rounded-xl bg-brand-500/10 text-brand-400">
             <IconUpload width={24} height={24} />
           </span>
         )}
@@ -222,7 +222,7 @@ function DatasetRow({ dataset, onDeleted }) {
   return (
     <Link to={`/datasets/${dataset.id}`} className="card card-hover flex items-center justify-between p-5">
       <div className="flex items-center gap-4">
-        <span className="flex h-11 w-11 items-center justify-center rounded-xl border border-white/10 bg-white/[0.04] text-brand-300">
+        <span className="flex h-11 w-11 items-center justify-center rounded-xl border border-white/10 bg-white/[0.04] text-brand-400">
           <IconDatabase width={20} height={20} />
         </span>
         <div>
@@ -231,7 +231,7 @@ function DatasetRow({ dataset, onDeleted }) {
         </div>
       </div>
       <div className="flex items-center gap-2">
-        <span className="hidden text-sm text-brand-300 sm:inline">View docs</span>
+        <span className="hidden text-sm text-brand-400 sm:inline">View docs</span>
         <IconArrowRight width={16} height={16} className="text-slate-500" />
         <button onClick={remove} disabled={busy}
           className="ml-2 rounded-lg border border-white/10 p-2 text-slate-500 transition hover:border-red-500/40 hover:text-red-300">
@@ -267,7 +267,7 @@ function ApiKeys({ keys, onChange }) {
     <section className="card p-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <IconKey width={18} height={18} className="text-brand-300" />
+          <IconKey width={18} height={18} className="text-brand-400" />
           <h2 className="font-semibold text-white">API keys</h2>
         </div>
         <button onClick={create} disabled={creating} className="btn-ghost">
