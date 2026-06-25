@@ -3,6 +3,18 @@
 Upload a spreadsheet, get a live, queryable REST API in seconds. A full-stack portfolio
 project: a **FastAPI + Supabase** backend and a **React + Vite + Tailwind** frontend.
 
+## What this serves as
+
+A complete, deployable SaaS base kept **in reserve**. It already has the hard parts of a
+metered API product built and tested — multi-tenant auth, hashed API keys, a real query
+language, and **plan-tiered rate limiting**. Payments are intentionally stubbed: upgrading
+just flips a `plan` flag, and the entitlement logic reads that flag live.
+
+The intent: if a company or client ever needs a **Stripe-billed / usage-metered API SaaS**,
+this is the project to pull off the shelf. Wiring in real billing is a small, isolated
+change — swap the "flip the flag" trigger from a button to a **Stripe Checkout + webhook**;
+everything else (limits, tiers, enforcement) already works.
+
 ```
 SpreadSheet/
 ├── backend/    # FastAPI service — auth, upload + schema inference, API keys,
