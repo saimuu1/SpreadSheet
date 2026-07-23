@@ -85,12 +85,13 @@ def create_app() -> FastAPI:
         return {"status": "ok"}
 
     # Routers
-    from app.routers import account, api_keys, datasets, public_api
+    from app.routers import account, api_keys, billing, datasets, public_api
 
     app.include_router(account.router)
     app.include_router(datasets.router)
     app.include_router(api_keys.router)
     app.include_router(public_api.router)
+    app.include_router(billing.router)
 
     return app
 

@@ -33,6 +33,30 @@ Two audiences, two auth systems:
 4. **Create the Storage bucket** named to match `STORAGE_BUCKET` (default `raw-uploads`),
    Supabase dashboard → Storage → New bucket.
 
+## Stripe billing (test mode, optional)
+
+The Pro plan upgrades through Stripe. Without these env vars the app still runs — the
+billing endpoints just return `503` until configured.
+
+1. Run `supabase/stripe.sql` in the SQL editor (adds `stripe_customer_id` /
+   `stripe_subscription_id` to `profiles`).
+2. In the **Stripe dashboard (test mode)**:
+   - Create a **Product** "Pro" with a **recurring** price (e.g. $7/mo) → copy the **Price ID**
+     (`price_…`) into `STRIPE_PRICE_ID`.
+   - Developers → API keys → copy the **Secret key** (`sk_test_…`) into `STRIPE_SECRET_KEY`.
+3. **Webhook** — forward Stripe events to the local server with the Stripe CLI:
+   ```bash
+   stripe listen --forward-to localhost:8000/api/webhooks/stripe
+   ```
+   It prints a signing secret (`whsec_…`) → put it in `STRIPE_WEBHOOK_SECRET`.
+   (In production, add a webhook endpoint in the dashboard pointing at your deployed URL and
+   subscribe to `checkout.session.completed` + `customer.subscription.*`.)
+4. Set `FRONTEND_URL` to where Stripe should return the user (default `http://localhost:5173`).
+
+Flow: dashboard **Upgrade to Pro** → Stripe Checkout → on success a webhook flips
+`profiles.plan` to `pro`. **Manage billing** opens the Stripe Customer Portal; cancelling
+there flips the plan back to `free`. Use test card `4242 4242 4242 4242`, any future expiry/CVC.
+
 ## Run
 
 ```bash

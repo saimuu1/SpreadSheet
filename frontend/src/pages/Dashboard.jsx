@@ -35,7 +35,26 @@ export default function Dashboard() {
     }
   }, [])
 
+  const [notice, setNotice] = useState('')
+
   useEffect(() => { load() }, [load])
+
+  // Handle the redirect back from Stripe Checkout.
+  useEffect(() => {
+    const status = new URLSearchParams(window.location.search).get('checkout')
+    if (!status) return
+    window.history.replaceState({}, '', '/dashboard')
+    if (status !== 'success') return
+    setNotice('Payment received — activating your Pro plan…')
+    // The plan flips via a Stripe webhook, so poll a few times for it to land.
+    let tries = 0
+    const iv = setInterval(() => {
+      tries += 1
+      load()
+      if (tries >= 5) clearInterval(iv)
+    }, 1500)
+    return () => clearInterval(iv)
+  }, [load])
 
   if (loading) {
     return (
@@ -53,9 +72,12 @@ export default function Dashboard() {
           <h1 className="text-2xl font-bold text-white">Dashboard</h1>
           <p className="mt-1 text-sm text-slate-400">{user?.email}</p>
         </div>
-        <PlanControl me={me} onChange={load} />
+        <PlanControl me={me} />
       </div>
 
+      {notice && (
+        <p className="mt-6 rounded-xl border border-emerald-500/20 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-300">{notice}</p>
+      )}
       {error && (
         <p className="mt-6 rounded-xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-300">{error}</p>
       )}
@@ -73,29 +95,43 @@ export default function Dashboard() {
   )
 }
 
-function PlanControl({ me, onChange }) {
+function PlanControl({ me }) {
   const [busy, setBusy] = useState(false)
+  const [err, setErr] = useState('')
   const isPro = me?.plan === 'pro'
 
-  async function toggle() {
+  // Both actions hand off to a Stripe-hosted page, so we just redirect to the returned URL.
+  async function go(path) {
     setBusy(true)
+    setErr('')
     try {
-      await apiPost(isPro ? '/api/account/downgrade' : '/api/account/upgrade')
-      await onChange()
-    } finally {
+      const { url } = await apiPost(path)
+      if (url) window.location.href = url
+      else setErr('Could not start billing session.')
+    } catch (e) {
+      setErr(e.message)
       setBusy(false)
     }
   }
 
   return (
-    <div className="flex items-center gap-3">
-      <span className={`badge ${isPro ? 'border-brand-400/40 text-brand-200' : ''}`}>
-        {isPro && <IconSparkle width={13} height={13} className="text-brand-400" />}
-        {isPro ? 'Pro plan' : 'Free plan'}
-      </span>
-      <button onClick={toggle} disabled={busy} className={isPro ? 'btn-ghost' : 'btn-primary'}>
-        {busy ? <IconSpinner width={16} height={16} /> : isPro ? 'Downgrade' : <>Upgrade to Pro <IconArrowRight width={15} height={15} /></>}
-      </button>
+    <div className="flex flex-col items-end gap-1">
+      <div className="flex items-center gap-3">
+        <span className={`badge ${isPro ? 'border-brand-400/40 text-brand-200' : ''}`}>
+          {isPro && <IconSparkle width={13} height={13} className="text-brand-400" />}
+          {isPro ? 'Pro plan' : 'Free plan'}
+        </span>
+        {isPro ? (
+          <button onClick={() => go('/api/billing/portal')} disabled={busy} className="btn-ghost">
+            {busy ? <IconSpinner width={16} height={16} /> : 'Manage billing'}
+          </button>
+        ) : (
+          <button onClick={() => go('/api/billing/checkout')} disabled={busy} className="btn-primary">
+            {busy ? <IconSpinner width={16} height={16} /> : <>Upgrade to Pro <IconArrowRight width={15} height={15} /></>}
+          </button>
+        )}
+      </div>
+      {err && <span className="text-xs text-red-300">{err}</span>}
     </div>
   )
 }

@@ -12,6 +12,7 @@ dependencies = [
     "pyjwt[crypto]>=2.9",
     "python-dateutil>=2.9",
     "python-multipart>=0.0.9",
+    "stripe>=10.0",
 ]
 
 [dependency-groups]

@@ -18,6 +18,13 @@ class Settings(BaseSettings):
     storage_bucket: str = "raw-uploads"
     cors_origins: str = "http://localhost:5173,http://localhost:3000"
 
+    # Stripe billing (optional — empty until configured)
+    stripe_secret_key: str = ""
+    stripe_webhook_secret: str = ""
+    stripe_price_id: str = ""
+    # Where Stripe redirects the user back to after checkout / portal.
+    frontend_url: str = "http://localhost:5173"
+
     @property
     def cors_origin_list(self) -> list[str]:
         return [o.strip() for o in self.cors_origins.split(",") if o.strip()]
