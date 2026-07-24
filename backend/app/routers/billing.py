@@ -11,6 +11,8 @@ webhook, so a subscription starting flips plan to 'pro' and a cancellation flips
 
 from __future__ import annotations
 
+import json
+
 import stripe
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 
@@ -100,15 +102,15 @@ async def stripe_webhook(request: Request) -> dict:
     payload = await request.body()
     signature = request.headers.get("stripe-signature")
     try:
-        event = stripe.Webhook.construct_event(
-            payload, signature, settings.stripe_webhook_secret
-        )
+        # Verify the signature; we then read fields from the plain JSON payload.
+        stripe.Webhook.construct_event(payload, signature, settings.stripe_webhook_secret)
     except (ValueError, stripe.SignatureVerificationError) as exc:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"Webhook signature verification failed: {exc}",
         ) from exc
 
+    event = json.loads(payload)
     obj = event["data"]["object"]
     event_type = event["type"]
 
