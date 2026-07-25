@@ -23,6 +23,7 @@ export default function Navbar() {
           <nav className="hidden items-center gap-8 text-sm text-slate-300 md:flex">
             <a href="#how" className="transition hover:text-white">How it works</a>
             <a href="#features" className="transition hover:text-white">Features</a>
+            <a href="#use-cases" className="transition hover:text-white">Who it's for</a>
             <a href="#pricing" className="transition hover:text-white">Pricing</a>
           </nav>
         )}
