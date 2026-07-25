@@ -38,6 +38,20 @@ the backend.
 - **Auto-generated docs** — each dataset gets an endpoint reference with fields, operators,
   a cURL sample, and a live "try it" panel.
 
+## Who it's for
+
+Anyone with structured data in a spreadsheet who needs it as an API — without building a backend:
+
+- **No-code builders** — plug data straight into Webflow, Bubble, Retool, or Framer.
+- **Non-technical teams** — own the sheet; the site reads the API, so data updates need no developer.
+- **Developers & prototypers** — a real, queryable backend for a demo, portfolio, or hackathon in minutes.
+- **Small businesses** — menus, listings, inventory, or pricing kept in a sheet and served live to a site.
+
+They share one shape: structured data in a sheet, a need to consume it in software, and no
+appetite to build a backend. The gap between "a file" and "an API" is the whole value — and
+the users who outgrow the free tier (many datasets, heavy traffic, private APIs) are exactly
+who **Pro billing** is for.
+
 ## Repository layout
 
 ```

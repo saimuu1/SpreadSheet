@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom'
 import Footer from '../components/Footer'
 import {
   IconArrowRight, IconUpload, IconLayers, IconCode, IconBolt,
-  IconShield, IconCheck,
+  IconShield, IconCheck, IconSparkle, IconDatabase,
 } from '../components/icons'
 
 function ApiDemo() {
@@ -47,6 +47,13 @@ const features = [
   { icon: IconBolt, title: 'Instant REST endpoints', body: 'A secure, queryable JSON API exists the moment your upload finishes — no code, no config.' },
   { icon: IconCode, title: 'A real query language', body: 'Filter, compare, search, sort and paginate right in the URL — price__gt=20, name__contains=oil, sort=-rating.' },
   { icon: IconShield, title: 'Secure by design', body: 'Hashed API keys, schema-whitelisted fields, parameterized queries and Postgres row-level security.' },
+]
+
+const audiences = [
+  { icon: IconLayers, title: 'No-code builders', body: 'Plug your data straight into Webflow, Bubble, Retool or Framer — no backend to build.' },
+  { icon: IconSparkle, title: 'Non-technical teams', body: 'You own the spreadsheet; your site reads the API. Update data without waiting on a developer.' },
+  { icon: IconCode, title: 'Developers & prototypers', body: 'A real, queryable backend for a demo, portfolio piece or hackathon in minutes.' },
+  { icon: IconDatabase, title: 'Small businesses', body: 'Menus, listings, inventory or pricing in a sheet — served live to your website.' },
 ]
 
 const tiers = [
@@ -121,6 +128,22 @@ export default function Landing() {
               </span>
               <h3 className="mt-4 font-semibold text-white">{f.title}</h3>
               <p className="mt-2 text-sm leading-relaxed text-slate-400">{f.body}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Who it's for */}
+      <section id="use-cases" className="container-page py-12">
+        <SectionHeading eyebrow="Who it's for" title="For anyone with data stuck in a sheet" />
+        <div className="mt-14 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          {audiences.map((a) => (
+            <div key={a.title} className="card card-hover p-6">
+              <span className="flex h-11 w-11 items-center justify-center rounded-lg bg-brand-500/10 text-brand-400">
+                <a.icon width={20} height={20} />
+              </span>
+              <h3 className="mt-4 font-semibold text-white">{a.title}</h3>
+              <p className="mt-2 text-sm leading-relaxed text-slate-400">{a.body}</p>
             </div>
           ))}
         </div>
