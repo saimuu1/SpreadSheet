@@ -1,8 +1,13 @@
 # Sheetwave — Spreadsheet → API
 
+### 🔗 **[Live demo → spread-sheet-fzur.vercel.app](https://spread-sheet-fzur.vercel.app)**
+
 Upload a spreadsheet, get a live, queryable REST API in seconds — with auth, API keys, a
 real query language, plan-based rate limits, and **Stripe subscription billing**. A
 **FastAPI + Supabase** backend and a **React + Vite + Tailwind** frontend.
+
+> Frontend on Vercel · backend on Render (free tier — the first request after idle may take
+> ~30s to wake up).
 
 ## What this is
 
