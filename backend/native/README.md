@@ -60,19 +60,46 @@ load word
 
 ---
 
+## The sharded, bounded table (Phase 2)
+
+`ShardedRateLimiter` holds a **fixed** number of bucket slots, so memory can't grow with the
+(unbounded) set of API keys — fixing the original limiter's unbounded `request_logs`.
+
+Concurrency strategy — **lock-free where it's hot, locked where it's rare**:
+- **Fast path (no lock):** probe for the key with atomic loads, then consume via the
+  lock-free CAS above.
+- **Slow path (per-shard striped mutex):** only on a miss — insert, or **CLOCK / second-chance
+  evict** a cold slot.
+- **Evict-vs-consume safety:** a consumer sets a slot's CLOCK reference bit before consuming;
+  eviction only reclaims slots with a *clear* bit, so a hot key is never evicted out from
+  under a live consumer. The one residual race (a cold key evicted at the instant a straggler
+  consumes it) **fails safe** — at most one extra token is charged to the incoming key; the
+  limit is never exceeded.
+
 ## Build & test
 
-Phase 1 is header-only and standalone (no Python yet):
+Header-only, standalone (no Python yet). Needs a C++17 compiler:
 
 ```bash
-c++ -std=c++17 -O2 -Wall -Wextra -I include tests/test_token_bucket.cpp -o /tmp/tb_test
-/tmp/tb_test
+# Phase 1 — single-bucket core
+c++ -std=c++17 -O2 -Wall -Wextra -I include tests/test_token_bucket.cpp -o /tmp/tb && /tmp/tb
+
+# Phase 2 — sharded limiter + concurrency stress tests
+c++ -std=c++17 -O2 -Wall -Wextra -pthread -I include tests/test_sharded.cpp -o /tmp/sh && /tmp/sh
+
+# Phase 2 — under ThreadSanitizer (must be race-clean AND pass)
+c++ -std=c++17 -O1 -g -fsanitize=thread -pthread -I include tests/test_sharded.cpp -o /tmp/sht && /tmp/sht
 ```
+
+Verified results: the naive count-then-insert over-allows (**~430 vs a limit of 50**), the
+token bucket grants **exactly `burst`** under 8 concurrent threads, memory stays bounded across
+1000 keys, and **ThreadSanitizer reports zero data races**.
 
 ## Roadmap
 - **Phase 1 (done):** lock-free single-bucket core + single-threaded correctness tests.
-- **Phase 2:** sharded, bounded table (striped locks for insert/evict, CLOCK eviction);
-  multi-threaded stress test that reproduces the old race and proves it's gone.
+- **Phase 2 (done):** sharded bounded table (striped locks, CLOCK eviction); multi-threaded
+  stress test that reproduces the old TOCTOU race and proves this limiter is race-free (clean
+  under ThreadSanitizer).
 - **Phase 3:** pybind11 binding with `gil_scoped_release`.
 - **Phase 4:** wire into FastAPI with a pure-Python fallback; decouple analytics logging.
 - **Phase 5:** benchmark (throughput / p99) vs the old DB approach.
