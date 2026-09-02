@@ -4,7 +4,8 @@
 
 Upload a spreadsheet, get a live, queryable REST API in seconds — with auth, API keys, a
 real query language, plan-based rate limits, and **Stripe subscription billing**. A
-**FastAPI + Supabase** backend and a **React + Vite + Tailwind** frontend.
+**FastAPI + Supabase** backend and a **React + Vite + Tailwind** frontend — with the rate
+limiter rebuilt from scratch as a **lock-free token bucket in C++** (via pybind11).
 
 > Frontend on Vercel · backend on Render (free tier — the first request after idle may take
 > ~30s to wake up).
@@ -43,6 +44,24 @@ the backend.
 - **Auto-generated docs** — each dataset gets an endpoint reference with fields, operators,
   a cURL sample, and a live "try it" panel.
 
+## Under the hood: a from-scratch rate limiter (C++)
+
+The rate limiter isn't a library call or a `COUNT(*)` — it's a **lock-free token bucket
+written in C++**, loaded via pybind11 (with a thread-safe pure-Python fallback). It replaced
+the original per-request `SELECT count(*)` over a log table, which had a **TOCTOU race** and
+grew unbounded.
+
+- **Lock-free core** — each bucket's state (timestamp + fixed-point tokens) is packed into one
+  `std::atomic<uint64_t>`; consuming a token is a single compare-and-swap, no lock.
+- **Bounded & sharded** — a fixed-capacity table with striped locks and CLOCK eviction, so
+  memory can't grow with the (unbounded) set of API keys.
+- **Proven correct** — a stress test reproduces the original's race and shows this one grants
+  exactly `burst` under 8 concurrent threads; **clean under ThreadSanitizer**.
+- **Fast** — ~200M ops/s across 8 threads in C++; ~130 ns/call from Python, with **zero DB
+  round-trips** (down from ~3 Supabase queries per request).
+
+Design notes, tests, and benchmarks: **[backend/native/](backend/native/README.md)**.
+
 ## Who it's for
 
 Anyone with structured data in a spreadsheet who needs it as an API — without building a backend:
@@ -61,9 +80,10 @@ who **Pro billing** is for.
 
 ```
 SpreadSheet/
-├── backend/    # FastAPI — auth, upload + inference, API keys, query language,
-│               # rate limiting & tiers, Stripe billing (see backend/README.md)
-└── frontend/   # React — landing, auth, dashboard, per-dataset API docs
+├── backend/          # FastAPI — auth, upload + inference, API keys, query language,
+│   │                 # rate limiting & tiers, Stripe billing (see backend/README.md)
+│   └── native/       # C++ lock-free rate limiter + pybind11 binding (see native/README.md)
+└── frontend/         # React — landing, auth, dashboard, per-dataset API docs
 ```
 
 ## Run it locally
@@ -105,3 +125,5 @@ Details and the exact env vars are in [backend/README.md](backend/README.md).
 | Backend | FastAPI, asyncpg, supabase-py, PyJWT, Stripe |
 | Data / auth | Supabase (Postgres, Auth, Storage, RLS) |
 | Billing | Stripe (Checkout, webhooks, Customer Portal) |
+| Performance | C++17 lock-free rate limiter via pybind11 (thread-safe Python fallback) |
+| Deploy | Vercel (frontend) · Render (backend) |
