@@ -19,7 +19,7 @@ from app.models.schemas import QueryResponse
 from app.services.plans import get_plan
 from app.services.query_builder import build_query
 from app.services.query_parser import QueryError, parse_query
-from app.services.rate_limit import enforce_and_log
+from app.services.rate_limit import check_rate_limit
 
 router = APIRouter(prefix="/api/v1/datasets", tags=["public-api"])
 
@@ -65,11 +65,12 @@ async def query_dataset(
     async with pool.acquire() as conn:
         await _authorize_dataset(conn, dataset_uuid, ctx.owner_id)
 
-        # Rate limit (step 3): read the owner's plan, enforce caps, log the request.
+        # Rate limit (step 3): in-memory token bucket (native C++, O(1), no DB
+        # round-trip). Replaces the old racy `count(*)` over request_logs.
         plan_name = await conn.fetchval(
             "select plan from profiles where id = $1", ctx.owner_id
         )
-        await enforce_and_log(conn, ctx.api_key_id, get_plan(plan_name))
+        check_rate_limit(ctx.api_key_id, get_plan(plan_name))
 
         columns = await _load_columns(conn, dataset_uuid)
 

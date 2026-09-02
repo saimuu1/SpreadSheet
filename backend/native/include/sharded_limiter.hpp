@@ -37,16 +37,18 @@ public:
     }
 
     // Consume one token for `key`, using the real monotonic clock.
-    bool allow(uint64_t key, uint32_t rate_per_sec, uint32_t burst) {
-        return allow_at(key, rate_per_sec, burst, TokenBucket::now_ms());
+    // rate_mt_per_s is the refill rate in millitokens/second (so fractional
+    // token rates like 10/min are exact); burst is the bucket capacity in tokens.
+    bool allow(uint64_t key, uint32_t rate_mt_per_s, uint32_t burst) {
+        return allow_at(key, rate_mt_per_s, burst, TokenBucket::now_ms());
     }
 
     // Same, with an injected clock — the deterministic hook the tests drive.
-    bool allow_at(uint64_t key, uint32_t rate_per_sec, uint32_t burst,
+    bool allow_at(uint64_t key, uint32_t rate_mt_per_s, uint32_t burst,
                   uint32_t now_ms) {
         key = normalize(key);
-        const uint32_t refill = rate_per_sec;                 // millitokens/ms
-        const uint32_t cap    = burst * detail::ONE_TOKEN_MT;
+        const uint32_t rate = rate_mt_per_s;                  // millitokens/sec
+        const uint32_t cap  = burst * detail::ONE_TOKEN_MT;
 
         Shard& sh = shards_[mix(key ^ SHARD_SALT) % shards_.size()];
         const size_t n = sh.slots.size();
@@ -58,7 +60,7 @@ public:
             uint64_t k = slot.key.load(std::memory_order_acquire);
             if (k == key) {
                 slot.ref.store(1, std::memory_order_relaxed);   // CLOCK reference
-                return detail::try_consume_word(slot.word, now_ms, refill, cap);
+                return detail::try_consume_word(slot.word, now_ms, rate, cap);
             }
             if (k == EMPTY) break;  // open-addressing: run ended, key not present
         }
@@ -71,13 +73,13 @@ public:
             uint64_t k = slot.key.load(std::memory_order_relaxed);
             if (k == key) {
                 slot.ref.store(1, std::memory_order_relaxed);
-                return detail::try_consume_word(slot.word, now_ms, refill, cap);
+                return detail::try_consume_word(slot.word, now_ms, rate, cap);
             }
             if (k == EMPTY) break;
         }
         Slot& target = sh.slots[acquire_slot(sh, home, n)];
         bind(target, key, now_ms, cap);
-        return detail::try_consume_word(target.word, now_ms, refill, cap);
+        return detail::try_consume_word(target.word, now_ms, rate, cap);
     }
 
     // --- introspection for tests ---

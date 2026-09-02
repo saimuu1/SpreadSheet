@@ -28,10 +28,11 @@ inline uint64_t pack(uint32_t ts, uint32_t tokens_mt) {
 inline uint32_t ts_of(uint64_t w) { return uint32_t(w >> 32); }
 inline uint32_t tok_of(uint64_t w) { return uint32_t(w & 0xffffffffu); }
 
-// Lock-free consume of one token from a packed bucket word.
+// Lock-free consume of one token from a packed bucket word. The refill rate is
+// in millitokens/second, so fractional token rates (e.g. 10/min) are exact.
 // Returns true iff a token was available (and consumed).
 inline bool try_consume_word(std::atomic<uint64_t>& word, uint32_t now_ms,
-                             uint32_t refill_mt_per_ms, uint32_t capacity_mt) {
+                             uint32_t rate_mt_per_s, uint32_t capacity_mt) {
     uint64_t old = word.load(std::memory_order_acquire);
     for (;;) {
         const uint32_t last   = ts_of(old);
@@ -41,8 +42,10 @@ inline bool try_consume_word(std::atomic<uint64_t>& word, uint32_t now_ms,
         // wrap, as long as the true gap is < ~49.7 days.
         const uint32_t elapsed = now_ms - last;
 
+        // millitokens/sec * ms / 1000 = millitokens. 64-bit intermediate avoids
+        // overflow; recomputing from `last` each call means no drift accrues.
         uint64_t refilled =
-            uint64_t(tokens) + uint64_t(elapsed) * refill_mt_per_ms;
+            uint64_t(tokens) + (uint64_t(elapsed) * rate_mt_per_s) / 1000u;
         if (refilled > capacity_mt) refilled = capacity_mt;
 
         if (refilled < ONE_TOKEN_MT) {
@@ -64,11 +67,11 @@ inline bool try_consume_word(std::atomic<uint64_t>& word, uint32_t now_ms,
 
 // Non-consuming: whole-token count if the word were refilled to now_ms.
 inline double tokens_in_word(const std::atomic<uint64_t>& word, uint32_t now_ms,
-                             uint32_t refill_mt_per_ms, uint32_t capacity_mt) {
+                             uint32_t rate_mt_per_s, uint32_t capacity_mt) {
     const uint64_t w = word.load(std::memory_order_acquire);
     const uint32_t elapsed = now_ms - ts_of(w);
     uint64_t refilled =
-        uint64_t(tok_of(w)) + uint64_t(elapsed) * refill_mt_per_ms;
+        uint64_t(tok_of(w)) + (uint64_t(elapsed) * rate_mt_per_s) / 1000u;
     if (refilled > capacity_mt) refilled = capacity_mt;
     return double(refilled) / double(ONE_TOKEN_MT);
 }
@@ -85,19 +88,19 @@ class TokenBucket {
 public:
     TokenBucket(uint32_t rate_per_sec, uint32_t burst, uint32_t now_ms)
         : capacity_mt_(burst * detail::ONE_TOKEN_MT),
-          // 1 token/sec == 1000 millitokens / 1000 ms == 1 millitoken/ms.
-          refill_mt_per_ms_(rate_per_sec),
+          // tokens/sec -> millitokens/sec (the core's rate unit).
+          rate_mt_per_s_(rate_per_sec * detail::ONE_TOKEN_MT),
           word_(detail::pack(now_ms, burst * detail::ONE_TOKEN_MT)) {}
 
     TokenBucket(const TokenBucket&) = delete;
     TokenBucket& operator=(const TokenBucket&) = delete;
 
     bool try_consume(uint32_t now_ms) {
-        return detail::try_consume_word(word_, now_ms, refill_mt_per_ms_, capacity_mt_);
+        return detail::try_consume_word(word_, now_ms, rate_mt_per_s_, capacity_mt_);
     }
     bool allow() { return try_consume(now_ms()); }
     double tokens_at(uint32_t now_ms) const {
-        return detail::tokens_in_word(word_, now_ms, refill_mt_per_ms_, capacity_mt_);
+        return detail::tokens_in_word(word_, now_ms, rate_mt_per_s_, capacity_mt_);
     }
 
     static uint32_t now_ms() {
@@ -109,7 +112,7 @@ public:
 
 private:
     const uint32_t capacity_mt_;
-    const uint32_t refill_mt_per_ms_;
+    const uint32_t rate_mt_per_s_;
     std::atomic<uint64_t> word_;
 };
 
