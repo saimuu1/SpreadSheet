@@ -82,7 +82,11 @@ def create_app() -> FastAPI:
 
     @app.get("/health", tags=["meta"])
     async def health() -> dict[str, str]:
-        return {"status": "ok"}
+        # `rate_limiter` reports which limiter is live: "native (C++)" when the
+        # pybind11 extension compiled, else "python (fallback)".
+        from app.services.rate_limit import BACKEND as rate_limiter
+
+        return {"status": "ok", "rate_limiter": rate_limiter}
 
     # Routers
     from app.routers import account, api_keys, billing, datasets, public_api

@@ -7,7 +7,13 @@ services:
     runtime: python
     plan: free
     rootDir: backend
-    buildCommand: pip install -r requirements.txt
+    # Install deps, then compile the C++ rate limiter (pybind11). The native build
+    # is non-fatal on purpose: if it fails, the app still deploys and uses the
+    # pure-Python fallback, so a compiler hiccup never breaks production.
+    buildCommand: >-
+      pip install -r requirements.txt &&
+      (pip install ./native ||
+       echo "native ratelimiter build failed - using pure-Python fallback")
     startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
     envVars:
       - key: PYTHON_VERSION
