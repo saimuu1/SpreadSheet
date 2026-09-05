@@ -139,6 +139,12 @@ path; it can be repurposed for batched analytics later.)
 - **Phase 5 (done):** benchmarks above.
 
 ## Deploy note
-Building a C++ extension in Render's Python build adds toolchain complexity, and the pure-Python
-fallback already keeps prod correct. So the native build is **local-first**: the artifact and its
-benchmarks live in the repo; wiring the compile into the Render build is an optional follow-up.
+The extension is compiled **in production** on Render: the service's build command runs
+`pip install ./native` after the Python deps. That step is **non-fatal** — if the compile ever
+fails, the deploy still succeeds and the app uses the pure-Python fallback, so a toolchain issue
+can't break prod. The live `GET /health` reports which limiter is active
+(`{"rate_limiter": "native (C++)"}` in production).
+
+> Gotcha worth remembering: a clean build tripped setuptools' flat-layout auto-discovery
+> (`Multiple top-level packages discovered: ['bench', 'include']`). Fixed by declaring
+> `packages=[]` in `setup.py` — this project ships only the compiled extension, no Python packages.
