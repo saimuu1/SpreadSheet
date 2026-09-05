@@ -59,6 +59,9 @@ grew unbounded.
   exactly `burst` under 8 concurrent threads; **clean under ThreadSanitizer**.
 - **Fast** — ~200M ops/s across 8 threads in C++; ~130 ns/call from Python, with **zero DB
   round-trips** (down from ~3 Supabase queries per request).
+- **Live in production** — compiled in the Render build (non-fatal, with the Python fallback as
+  a safety net) and running on the real request path. Verify it:
+  [`/health`](https://sheetwave-backend.onrender.com/health) → `{"rate_limiter":"native (C++)"}`.
 
 Design notes, tests, and benchmarks: **[backend/native/](backend/native/README.md)**.
 
